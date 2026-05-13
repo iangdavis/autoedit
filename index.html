@@ -15,37 +15,61 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 32px 16px;
-      gap: 32px;
+      padding: 32px 16px 64px;
+      gap: 0;
     }
 
-    h1 { font-size: 1.2rem; font-weight: 500; letter-spacing: 0.1em; color: #aaa; }
+    h1 { font-size: 1.2rem; font-weight: 500; letter-spacing: 0.1em; color: #aaa; margin-bottom: 32px; }
 
-    #status {
-      font-size: 0.85rem;
-      color: #888;
-      min-height: 1.2em;
-      text-align: center;
-    }
-
-    .panel {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 24px;
+    /* ── Stepper ── */
+    #stepper {
       width: 100%;
-      max-width: 700px;
+      max-width: 480px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 0;
     }
 
-    .panel h2 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; color: #666; text-transform: uppercase; }
+    .step {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadein 0.2s ease;
+    }
+    .step.active { display: flex; }
+
+    @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #2a2a2a;
+      color: #666;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+    .step-sub {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 2px;
+    }
 
     .drop-zone {
       border: 1.5px dashed #333;
-      border-radius: 8px;
-      padding: 32px;
+      border-radius: 10px;
+      padding: 40px 24px;
       text-align: center;
       cursor: pointer;
       color: #555;
@@ -55,128 +79,154 @@
     .drop-zone:hover, .drop-zone.dragover { border-color: #666; color: #aaa; }
     .drop-zone input { display: none; }
 
-    .file-list { font-size: 0.8rem; color: #666; display: flex; flex-wrap: wrap; gap: 6px; }
+    .file-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .file-chip {
-      background: #222;
-      border: 1px solid #333;
+      background: #1e1e1e;
+      border: 1px solid #2a2a2a;
       border-radius: 4px;
-      padding: 2px 8px;
+      padding: 3px 9px;
+      font-size: 0.75rem;
+      color: #888;
     }
 
-    button {
-      background: #e0e0e0;
-      color: #0f0f0f;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      align-self: flex-start;
-      transition: background 0.15s;
+    .thumb-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+    .thumb-strip img {
+      width: 72px; height: 72px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #2a2a2a;
     }
-    button:hover { background: #fff; }
-    button:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-    .preview-row {
-      display: flex;
-      gap: 16px;
+    .preview-img {
       width: 100%;
-      max-width: 700px;
-    }
-    .preview-box {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .preview-box span { font-size: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
-    .preview-box img {
-      width: 100%;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #2a2a2a;
       display: none;
     }
-    .preview-box img.visible { display: block; }
+    .preview-img.visible { display: block; }
 
-    a#download-link {
-      display: none;
-      font-size: 0.85rem;
-      color: #aaa;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    a#download-link.visible { display: inline; }
+    /* before/after */
+    .compare-row { display: flex; gap: 10px; }
+    .compare-box { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .compare-box span { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
+    .compare-box img { width: 100%; border-radius: 8px; border: 1px solid #2a2a2a; }
 
-    #grid-section {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      max-width: 700px;
-    }
-    #grid-section.visible { display: flex; }
-    #grid-section h2 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; color: #666; text-transform: uppercase; align-self: flex-start; }
-
+    /* grid */
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 3px;
       width: 100%;
     }
-    .grid-cell {
-      aspect-ratio: 1;
-      overflow: hidden;
-      background: #1a1a1a;
-    }
-    .grid-cell img {
+    .grid-cell { aspect-ratio: 1; overflow: hidden; background: #1a1a1a; }
+    .grid-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* buttons */
+    .btn {
+      background: #e0e0e0;
+      color: #0f0f0f;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: #fff; }
+    .btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+    .btn-ghost {
+      background: none;
+      border: 1px solid #2a2a2a;
+      color: #666;
+      border-radius: 10px;
+      padding: 11px 24px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      width: 100%;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-ghost:hover { border-color: #555; color: #aaa; }
+
+    #status {
+      font-size: 0.8rem;
+      color: #555;
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    a.download {
       display: block;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #aaa;
+      text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>autoedit</h1>
-  <div id="status">Loading Python runtime…</div>
 
-  <div class="panel">
-    <h2>1 — Inspiration images</h2>
-    <div class="drop-zone" id="inspo-drop">
-      <input type="file" id="inspo-input" multiple accept="image/*" />
-      Drop images here or <u>browse</u>
+  <div id="stepper">
+
+    <!-- Step 1: Loading -->
+    <div class="step active" id="step-loading">
+      <div class="step-header">
+        <div class="step-num">·</div>
+        <div><div class="step-title">Loading</div><div class="step-sub">Initializing Python runtime…</div></div>
+      </div>
     </div>
-    <div class="file-list" id="inspo-list"></div>
-    <button id="create-btn" disabled>Build profile</button>
-  </div>
 
-  <div class="panel">
-    <h2>2 — Apply to image</h2>
-    <div class="drop-zone" id="input-drop">
-      <input type="file" id="input-input" accept="image/*" />
-      Drop image here or <u>browse</u>
+    <!-- Step 2: Inspo -->
+    <div class="step" id="step-inspo">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div><div class="step-title">Inspiration images</div><div class="step-sub">Add photos whose look you want to match</div></div>
+      </div>
+      <div class="drop-zone" id="inspo-drop">
+        <input type="file" id="inspo-input" multiple accept="image/*" />
+        Tap to add photos
+      </div>
+      <div class="thumb-strip" id="inspo-thumbs"></div>
+      <button class="btn" id="create-btn" disabled>Next</button>
+      <div id="status"></div>
     </div>
-    <button id="apply-btn" disabled>Apply look</button>
-  </div>
 
-  <div class="preview-row">
-    <div class="preview-box">
-      <span>Before</span>
-      <img id="before-img" />
+    <!-- Step 3: Pick input -->
+    <div class="step" id="step-input">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div><div class="step-title">Photo to edit</div><div class="step-sub">Choose the photo you want to apply the look to</div></div>
+      </div>
+      <div class="drop-zone" id="input-drop">
+        <input type="file" id="input-input" accept="image/*" />
+        Tap to choose a photo
+      </div>
+      <img class="preview-img" id="before-img" />
+      <button class="btn" id="apply-btn" disabled>Apply look</button>
+      <button class="btn-ghost" id="back-btn">← Change inspiration images</button>
+      <div id="status2"></div>
     </div>
-    <div class="preview-box">
-      <span>After</span>
-      <img id="after-img" />
+
+    <!-- Step 4: Result -->
+    <div class="step" id="step-result">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div><div class="step-title">Result</div><div class="step-sub">Before / after</div></div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-box"><span>Before</span><img id="before-result" /></div>
+        <div class="compare-box"><span>After</span><img id="after-result" /></div>
+      </div>
+      <a class="download" id="download-link" download="output.jpg">Save</a>
+      <div style="margin-top:8px;font-size:0.75rem;color:#444;text-align:center">Grid preview</div>
+      <div class="grid" id="grid"></div>
+      <button class="btn-ghost" id="edit-another-btn">Edit another photo</button>
+      <button class="btn-ghost" id="restart-btn">Start over</button>
     </div>
-  </div>
 
-  <a id="download-link" download="output.jpg">Download output</a>
-
-  <div id="grid-section">
-    <h2>Grid preview</h2>
-    <div class="grid" id="grid"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js"></script>
@@ -184,18 +234,17 @@
     let pyodide = null;
     let profileReady = false;
     let inputFile = null;
+    let inspoFiles = [];
+    let inspoUrls = [];
+    let outputB64 = null;
 
-    const status = document.getElementById("status");
-    const createBtn = document.getElementById("create-btn");
-    const applyBtn = document.getElementById("apply-btn");
-    const inspoList = document.getElementById("inspo-list");
-    const beforeImg = document.getElementById("before-img");
-    const afterImg = document.getElementById("after-img");
-    const gridSection = document.getElementById("grid-section");
-    const grid = document.getElementById("grid");
-    const downloadLink = document.getElementById("download-link");
+    // ── Step navigation ────────────────────────────────────────────────────────
+    function showStep(id) {
+      document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
 
-    // ── Pyodide init ───────────────────────────────────────────────────────────
+    // ── Pyodide ────────────────────────────────────────────────────────────────
     const AUTOEDIT_PY = `
 import numpy as np
 from PIL import Image, ImageOps
@@ -260,13 +309,14 @@ def _smooth_hist(h, sigma=4):
       pyodide = await loadPyodide();
       await pyodide.loadPackage(["numpy", "Pillow"]);
       pyodide.runPython(AUTOEDIT_PY);
-      status.textContent = "Ready.";
-      createBtn.disabled = false;
+      showStep("step-inspo");
     }
 
-    initPyodide().catch(e => { status.textContent = "Failed to load runtime: " + e; });
+    initPyodide().catch(e => {
+      document.querySelector("#step-loading .step-sub").textContent = "Failed to load: " + e;
+    });
 
-    // ── Drop zone wiring ───────────────────────────────────────────────────────
+    // ── Drop zones ─────────────────────────────────────────────────────────────
     function wireDrop(zone, input, onFiles) {
       zone.addEventListener("click", () => input.click());
       input.addEventListener("change", () => onFiles(Array.from(input.files)));
@@ -279,62 +329,40 @@ def _smooth_hist(h, sigma=4):
       });
     }
 
-    let inspoFiles = [];
-    let inspoUrls = [];
-
-    function buildGrid(outputUrl) {
-      grid.innerHTML = "";
-      const cells = outputUrl
-        ? [outputUrl, ...inspoUrls]
-        : inspoUrls;
-      cells.forEach(url => {
-        const cell = document.createElement("div");
-        cell.className = "grid-cell";
-        const img = document.createElement("img");
-        img.src = url;
-        cell.appendChild(img);
-        grid.appendChild(cell);
-      });
-      gridSection.classList.toggle("visible", cells.length > 0);
-    }
-
     wireDrop(document.getElementById("inspo-drop"), document.getElementById("inspo-input"), files => {
       inspoFiles = files;
       inspoUrls = files.map(f => URL.createObjectURL(f));
-      inspoList.innerHTML = files.map(f => `<span class="file-chip">${f.name}</span>`).join("");
-      buildGrid(null);
+      const thumbs = document.getElementById("inspo-thumbs");
+      thumbs.innerHTML = "";
+      inspoUrls.forEach(url => {
+        const img = document.createElement("img");
+        img.src = url;
+        thumbs.appendChild(img);
+      });
+      document.getElementById("create-btn").disabled = false;
     });
 
     wireDrop(document.getElementById("input-drop"), document.getElementById("input-input"), files => {
       if (!files.length) return;
       inputFile = files[0];
-      const url = URL.createObjectURL(inputFile);
-      beforeImg.src = url;
+      const beforeImg = document.getElementById("before-img");
+      beforeImg.src = URL.createObjectURL(inputFile);
       beforeImg.classList.add("visible");
-      if (profileReady) applyBtn.disabled = false;
+      document.getElementById("apply-btn").disabled = false;
     });
 
-    // ── Helpers ────────────────────────────────────────────────────────────────
-    async function fileToBytes(file) {
-      const buf = await file.arrayBuffer();
-      return new Uint8Array(buf);
-    }
-
-    function setStatus(msg) { status.textContent = msg; }
-
     // ── Build profile ──────────────────────────────────────────────────────────
-    createBtn.addEventListener("click", async () => {
-      if (!inspoFiles.length) { setStatus("Add inspiration images first."); return; }
-      createBtn.disabled = true;
-      setStatus("Building profile…");
+    document.getElementById("create-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("create-btn");
+      const status = document.getElementById("status");
+      btn.disabled = true;
+      status.textContent = "Building profile…";
 
       try {
-        // Read all file bytes in JS before passing to Python
         const inspoByteArrays = await Promise.all(inspoFiles.map(async f => {
           const buf = await f.arrayBuffer();
           return new Uint8Array(buf);
         }));
-
         pyodide.globals.set("_inspo_byte_arrays", inspoByteArrays);
 
         await pyodide.runPythonAsync(`
@@ -368,24 +396,25 @@ _profile = {
 }
 `);
         profileReady = true;
-        setStatus("Profile ready.");
-        if (inputFile) applyBtn.disabled = false;
+        status.textContent = "";
+        showStep("step-input");
       } catch (e) {
-        setStatus("Error building profile: " + e);
+        status.textContent = "Error: " + e;
         console.error(e);
+        btn.disabled = false;
       }
-      createBtn.disabled = false;
     });
 
-    // ── Apply profile ──────────────────────────────────────────────────────────
-    applyBtn.addEventListener("click", async () => {
-      if (!inputFile || !profileReady) return;
-      applyBtn.disabled = true;
-      setStatus("Applying look…");
+    // ── Apply ──────────────────────────────────────────────────────────────────
+    document.getElementById("apply-btn").addEventListener("click", async () => {
+      const btn = document.getElementById("apply-btn");
+      const status = document.getElementById("status2");
+      btn.disabled = true;
+      status.textContent = "Applying look…";
 
       try {
-        const bytes = await fileToBytes(inputFile);
-        pyodide.globals.set("_input_bytes", bytes);
+        const buf = await inputFile.arrayBuffer();
+        pyodide.globals.set("_input_bytes", new Uint8Array(buf));
 
         await pyodide.runPythonAsync(`
 import io
@@ -404,7 +433,6 @@ v_chan = hsv[..., 2]
 
 band_width = 1.0 / n_bands
 band_sigma = band_width * 0.5
-
 s_ranks = precompute_ranks(s_chan)
 
 bins = 256
@@ -465,18 +493,50 @@ _output_bytes = buf.getvalue()
         const arr = new Uint8Array(outputBytes.toJs ? outputBytes.toJs() : outputBytes);
         let binary = "";
         for (let i = 0; i < arr.length; i++) binary += String.fromCharCode(arr[i]);
-        const b64 = "data:image/jpeg;base64," + btoa(binary);
-        afterImg.src = b64;
-        afterImg.classList.add("visible");
-        downloadLink.href = b64;
-        downloadLink.classList.add("visible");
-        buildGrid(b64);
-        setStatus("Done.");
+        outputB64 = "data:image/jpeg;base64," + btoa(binary);
+
+        const beforeSrc = document.getElementById("before-img").src;
+        document.getElementById("before-result").src = beforeSrc;
+        document.getElementById("after-result").src = outputB64;
+        document.getElementById("download-link").href = outputB64;
+
+        // Build grid: output first, then inspo
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "";
+        [outputB64, ...inspoUrls].forEach(url => {
+          const cell = document.createElement("div");
+          cell.className = "grid-cell";
+          const img = document.createElement("img");
+          img.src = url;
+          cell.appendChild(img);
+          grid.appendChild(cell);
+        });
+
+        status.textContent = "";
+        showStep("step-result");
       } catch (e) {
-        setStatus("Error applying profile: " + e);
+        status.textContent = "Error: " + e;
         console.error(e);
+        btn.disabled = false;
       }
-      applyBtn.disabled = false;
+    });
+
+    // ── Navigation ─────────────────────────────────────────────────────────────
+    document.getElementById("back-btn").addEventListener("click", () => showStep("step-inspo"));
+
+    document.getElementById("edit-another-btn").addEventListener("click", () => {
+      inputFile = null;
+      document.getElementById("before-img").classList.remove("visible");
+      document.getElementById("apply-btn").disabled = true;
+      showStep("step-input");
+    });
+
+    document.getElementById("restart-btn").addEventListener("click", () => {
+      inspoFiles = []; inspoUrls = []; inputFile = null; profileReady = false; outputB64 = null;
+      document.getElementById("inspo-thumbs").innerHTML = "";
+      document.getElementById("create-btn").disabled = true;
+      document.getElementById("before-img").classList.remove("visible");
+      showStep("step-inspo");
     });
   </script>
 </body>
