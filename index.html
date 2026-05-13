@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>autoedit</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+      gap: 32px;
+    }
+
+    h1 { font-size: 1.2rem; font-weight: 500; letter-spacing: 0.1em; color: #aaa; }
+
+    #status {
+      font-size: 0.85rem;
+      color: #888;
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    .panel {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 24px;
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel h2 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; color: #666; text-transform: uppercase; }
+
+    .drop-zone {
+      border: 1.5px dashed #333;
+      border-radius: 8px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      color: #555;
+      font-size: 0.9rem;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #666; color: #aaa; }
+    .drop-zone input { display: none; }
+
+    .file-list { font-size: 0.8rem; color: #666; display: flex; flex-wrap: wrap; gap: 6px; }
+    .file-chip {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    button {
+      background: #e0e0e0;
+      color: #0f0f0f;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      align-self: flex-start;
+      transition: background 0.15s;
+    }
+    button:hover { background: #fff; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+    .preview-row {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+      max-width: 700px;
+    }
+    .preview-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .preview-box span { font-size: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
+    .preview-box img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid #2a2a2a;
+      display: none;
+    }
+    .preview-box img.visible { display: block; }
+
+    a#download-link {
+      display: none;
+      font-size: 0.85rem;
+      color: #aaa;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    a#download-link.visible { display: inline; }
+
+    #grid-section {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 700px;
+    }
+    #grid-section.visible { display: flex; }
+    #grid-section h2 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; color: #666; text-transform: uppercase; align-self: flex-start; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      width: 100%;
+    }
+    .grid-cell {
+      aspect-ratio: 1;
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+    .grid-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>autoedit</h1>
+  <div id="status">Loading Python runtime…</div>
+
+  <div class="panel">
+    <h2>1 — Inspiration images</h2>
+    <div class="drop-zone" id="inspo-drop">
+      <input type="file" id="inspo-input" multiple accept="image/*" />
+      Drop images here or <u>browse</u>
+    </div>
+    <div class="file-list" id="inspo-list"></div>
+    <button id="create-btn" disabled>Build profile</button>
+  </div>
+
+  <div class="panel">
+    <h2>2 — Apply to image</h2>
+    <div class="drop-zone" id="input-drop">
+      <input type="file" id="input-input" accept="image/*" />
+      Drop image here or <u>browse</u>
+    </div>
+    <button id="apply-btn" disabled>Apply look</button>
+  </div>
+
+  <div class="preview-row">
+    <div class="preview-box">
+      <span>Before</span>
+      <img id="before-img" />
+    </div>
+    <div class="preview-box">
+      <span>After</span>
+      <img id="after-img" />
+    </div>
+  </div>
+
+  <a id="download-link" download="output.jpg">Download output</a>
+
+  <div id="grid-section">
+    <h2>Grid preview</h2>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.27.3/full/pyodide.js"></script>
+  <script>
+    let pyodide = null;
+    let profileReady = false;
+    let inputFile = null;
+
+    const status = document.getElementById("status");
+    const createBtn = document.getElementById("create-btn");
+    const applyBtn = document.getElementById("apply-btn");
+    const inspoList = document.getElementById("inspo-list");
+    const beforeImg = document.getElementById("before-img");
+    const afterImg = document.getElementById("after-img");
+    const gridSection = document.getElementById("grid-section");
+    const grid = document.getElementById("grid");
+    const downloadLink = document.getElementById("download-link");
+
+    // ── Pyodide init ───────────────────────────────────────────────────────────
+    const AUTOEDIT_PY = `
+import numpy as np
+from PIL import Image, ImageOps
+
+def rgb_to_hsv(arr):
+    r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
+    v = arr.max(axis=-1)
+    mn = arr.min(axis=-1)
+    delta = v - mn
+    s = np.where(v > 0, delta / np.where(v > 0, v, 1.0), 0.0)
+    h = np.zeros_like(v)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        m_r = (v == r) & (delta > 0)
+        m_g = (v == g) & (delta > 0)
+        m_b = (v == b) & (delta > 0)
+        h[m_r] = ((g[m_r] - b[m_r]) / delta[m_r]) % 6
+        h[m_g] = (b[m_g] - r[m_g]) / delta[m_g] + 2
+        h[m_b] = (r[m_b] - g[m_b]) / delta[m_b] + 4
+    h /= 6.0
+    return np.stack([h, s, v], axis=-1)
+
+def hsv_to_rgb(h, s, v):
+    h6 = h * 6.0
+    i = np.floor(h6).astype(np.int32) % 6
+    f = h6 - np.floor(h6)
+    p = v * (1 - s)
+    q = v * (1 - f * s)
+    t = v * (1 - (1 - f) * s)
+    rgb = np.empty((*h.shape, 3), dtype=np.float32)
+    for idx, (rc, gc, bc) in enumerate([(v, t, p), (q, v, p), (p, v, t),
+                                         (p, q, v), (t, p, v), (v, p, q)]):
+        m = i == idx
+        rgb[m, 0] = rc[m]; rgb[m, 1] = gc[m]; rgb[m, 2] = bc[m]
+    return rgb
+
+def load_hsv(path):
+    img = ImageOps.exif_transpose(Image.open(path).convert("RGB"))
+    arr = np.array(img, dtype=np.float32) / 255.0
+    return rgb_to_hsv(arr)
+
+def precompute_ranks(src_vals, bins=4096):
+    flat = src_vals.ravel()
+    hist, edges = np.histogram(flat, bins=bins, range=(0.0, 1.0))
+    cdf = np.cumsum(hist).astype(np.float32)
+    cdf /= cdf[-1]
+    idx = np.clip(np.digitize(flat, edges[1:], right=False), 0, bins - 1)
+    return cdf[idx].reshape(src_vals.shape)
+
+def _smooth_hist(h, sigma=4):
+    size = sigma * 6 + 1
+    x = np.arange(size) - size // 2
+    kernel = np.exp(-0.5 * (x / float(sigma)) ** 2)
+    kernel /= kernel.sum()
+    return np.convolve(h, kernel, mode="same")
+`;
+
+    async function initPyodide() {
+      pyodide = await loadPyodide();
+      await pyodide.loadPackage(["numpy", "Pillow"]);
+      pyodide.runPython(AUTOEDIT_PY);
+      status.textContent = "Ready.";
+      createBtn.disabled = false;
+    }
+
+    initPyodide().catch(e => { status.textContent = "Failed to load runtime: " + e; });
+
+    // ── Drop zone wiring ───────────────────────────────────────────────────────
+    function wireDrop(zone, input, onFiles) {
+      zone.addEventListener("click", () => input.click());
+      input.addEventListener("change", () => onFiles(Array.from(input.files)));
+      zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });
+      zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+      zone.addEventListener("drop", e => {
+        e.preventDefault();
+        zone.classList.remove("dragover");
+        onFiles(Array.from(e.dataTransfer.files));
+      });
+    }
+
+    let inspoFiles = [];
+    let inspoUrls = [];
+
+    function buildGrid(outputUrl) {
+      grid.innerHTML = "";
+      const cells = outputUrl
+        ? [outputUrl, ...inspoUrls]
+        : inspoUrls;
+      cells.forEach(url => {
+        const cell = document.createElement("div");
+        cell.className = "grid-cell";
+        const img = document.createElement("img");
+        img.src = url;
+        cell.appendChild(img);
+        grid.appendChild(cell);
+      });
+      gridSection.classList.toggle("visible", cells.length > 0);
+    }
+
+    wireDrop(document.getElementById("inspo-drop"), document.getElementById("inspo-input"), files => {
+      inspoFiles = files;
+      inspoUrls = files.map(f => URL.createObjectURL(f));
+      inspoList.innerHTML = files.map(f => `<span class="file-chip">${f.name}</span>`).join("");
+      buildGrid(null);
+    });
+
+    wireDrop(document.getElementById("input-drop"), document.getElementById("input-input"), files => {
+      if (!files.length) return;
+      inputFile = files[0];
+      const url = URL.createObjectURL(inputFile);
+      beforeImg.src = url;
+      beforeImg.classList.add("visible");
+      if (profileReady) applyBtn.disabled = false;
+    });
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    async function fileToBytes(file) {
+      const buf = await file.arrayBuffer();
+      return new Uint8Array(buf);
+    }
+
+    function setStatus(msg) { status.textContent = msg; }
+
+    // ── Build profile ──────────────────────────────────────────────────────────
+    createBtn.addEventListener("click", async () => {
+      if (!inspoFiles.length) { setStatus("Add inspiration images first."); return; }
+      createBtn.disabled = true;
+      setStatus("Building profile…");
+
+      try {
+        // Read all file bytes in JS before passing to Python
+        const inspoByteArrays = await Promise.all(inspoFiles.map(async f => {
+          const buf = await f.arrayBuffer();
+          return new Uint8Array(buf);
+        }));
+
+        pyodide.globals.set("_inspo_byte_arrays", inspoByteArrays);
+
+        await pyodide.runPythonAsync(`
+import io
+import numpy as np
+
+n_bands = 16
+band_hists = [np.zeros(256, dtype=np.float64) for _ in range(n_bands)]
+v_hist_acc = np.zeros(256, dtype=np.float64)
+
+for js_arr in _inspo_byte_arrays:
+    data = bytes(js_arr.to_py())
+    hsv = load_hsv(io.BytesIO(data))
+    h_chan, s_chan, v_chan = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+    for band in range(n_bands):
+        lo, hi = band / n_bands, (band + 1) / n_bands
+        mask = (h_chan >= lo) & (h_chan < hi)
+        if not mask.any():
+            continue
+        hist, _ = np.histogram(s_chan[mask], bins=256, range=(0.0, 1.0))
+        band_hists[band] += hist
+    h, _ = np.histogram(v_chan, bins=256, range=(0.0, 1.0))
+    v_hist_acc += h
+
+band_hists = [_smooth_hist(h) for h in band_hists]
+v_hist_acc = _smooth_hist(v_hist_acc)
+_profile = {
+    "n_bands": n_bands,
+    "histograms": [h.tolist() for h in band_hists],
+    "v_histogram": v_hist_acc.tolist(),
+}
+`);
+        profileReady = true;
+        setStatus("Profile ready.");
+        if (inputFile) applyBtn.disabled = false;
+      } catch (e) {
+        setStatus("Error building profile: " + e);
+        console.error(e);
+      }
+      createBtn.disabled = false;
+    });
+
+    // ── Apply profile ──────────────────────────────────────────────────────────
+    applyBtn.addEventListener("click", async () => {
+      if (!inputFile || !profileReady) return;
+      applyBtn.disabled = true;
+      setStatus("Applying look…");
+
+      try {
+        const bytes = await fileToBytes(inputFile);
+        pyodide.globals.set("_input_bytes", bytes);
+
+        await pyodide.runPythonAsync(`
+import io
+import numpy as np
+from PIL import Image
+
+profile = _profile
+n_bands = profile["n_bands"]
+band_hists = [np.array(h) for h in profile["histograms"]]
+
+data = bytes(_input_bytes.to_py())
+hsv = load_hsv(io.BytesIO(data))
+h_chan = hsv[..., 0]
+s_chan = hsv[..., 1].copy()
+v_chan = hsv[..., 2]
+
+band_width = 1.0 / n_bands
+band_sigma = band_width * 0.5
+
+s_ranks = precompute_ranks(s_chan)
+
+bins = 256
+centers = ((np.arange(bins) + 0.5) / bins).astype(np.float32)
+rank_bins = (np.arange(bins) + 0.5) / bins
+all_luts = np.zeros((n_bands, bins), dtype=np.float32)
+has_data = np.zeros(n_bands, dtype=bool)
+for band, ref_hist in enumerate(band_hists):
+    if ref_hist.sum() == 0:
+        continue
+    ref_cdf = np.cumsum(ref_hist).astype(np.float64)
+    ref_cdf /= ref_cdf[-1]
+    all_luts[band] = centers[np.searchsorted(ref_cdf, rank_bins, side="left").clip(0, bins - 1)]
+    has_data[band] = True
+
+h_lut_bins = 512
+h_vals = (np.arange(h_lut_bins) + 0.5) / h_lut_bins
+band_centers = (np.arange(n_bands) + 0.5) / n_bands
+diff = np.abs(h_vals[:, None] - band_centers[None, :])
+diff = np.minimum(diff, 1.0 - diff)
+band_weights_2d = np.exp(-0.5 * (diff / band_sigma) ** 2)
+band_weights_2d *= has_data[None, :]
+weight_sum = band_weights_2d.sum(axis=1, keepdims=True)
+lut_2d = np.where(weight_sum > 0, (band_weights_2d @ all_luts) / weight_sum, 0.0)
+
+h_idx = np.clip((h_chan * h_lut_bins).astype(np.int32), 0, h_lut_bins - 1)
+s_rank_idx = np.clip((s_ranks * bins).astype(np.int32), 0, bins - 1)
+s_new_flat = lut_2d[h_idx.ravel(), s_rank_idx.ravel()]
+no_data = (weight_sum.ravel()[h_idx.ravel()] == 0)
+s_new_flat[no_data] = s_chan.ravel()[no_data]
+s_new = s_new_flat.reshape(s_chan.shape).astype(np.float32)
+
+lum_weight = np.ones_like(v_chan)
+lum_weight[v_chan < 0.1] = v_chan[v_chan < 0.1] / 0.1
+lum_weight[v_chan > 0.9] = (1.0 - v_chan[v_chan > 0.9]) / 0.1
+lum_weight = np.clip(lum_weight, 0.0, 1.0)
+s_final = np.clip(s_chan + lum_weight * (s_new - s_chan), 0.0, 1.0)
+
+v_hist = profile.get("v_histogram")
+if v_hist is not None:
+    v_ref = np.array(v_hist)
+    v_cdf = np.cumsum(v_ref).astype(np.float64)
+    v_cdf /= v_cdf[-1]
+    v_lut = centers[np.searchsorted(v_cdf, rank_bins, side="left").clip(0, bins - 1)]
+    v_ranks = precompute_ranks(v_chan)
+    v_rank_idx = np.clip((v_ranks * bins).astype(np.int32), 0, bins - 1)
+    v_final = v_lut[v_rank_idx]
+else:
+    v_final = v_chan
+
+rgb = hsv_to_rgb(h_chan, s_final, v_final)
+buf = io.BytesIO()
+Image.fromarray((rgb * 255).astype(np.uint8)).save(buf, format="JPEG", quality=95)
+_output_bytes = buf.getvalue()
+`);
+
+        const outputBytes = pyodide.globals.get("_output_bytes");
+        const arr = new Uint8Array(outputBytes.toJs ? outputBytes.toJs() : outputBytes);
+        let binary = "";
+        for (let i = 0; i < arr.length; i++) binary += String.fromCharCode(arr[i]);
+        const b64 = "data:image/jpeg;base64," + btoa(binary);
+        afterImg.src = b64;
+        afterImg.classList.add("visible");
+        downloadLink.href = b64;
+        downloadLink.classList.add("visible");
+        buildGrid(b64);
+        setStatus("Done.");
+      } catch (e) {
+        setStatus("Error applying profile: " + e);
+        console.error(e);
+      }
+      applyBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>
