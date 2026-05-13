@@ -6,172 +6,85 @@
   <title>autoedit</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f0f0f;
-      color: #e0e0e0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 32px 16px 64px;
-      gap: 0;
+      background: #0f0f0f; color: #e0e0e0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 32px 16px 64px;
     }
-
     h1 { font-size: 1.2rem; font-weight: 500; letter-spacing: 0.1em; color: #aaa; margin-bottom: 32px; }
-
-    /* ── Stepper ── */
-    #stepper {
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .step {
-      display: none;
-      flex-direction: column;
-      gap: 20px;
-      animation: fadein 0.2s ease;
-    }
+    #stepper { width: 100%; max-width: 480px; }
+    .step { display: none; flex-direction: column; gap: 20px; animation: fadein 0.2s ease; }
     .step.active { display: flex; }
-
-    @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-    .step-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .step-header { display: flex; align-items: center; gap: 12px; }
     .step-num {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: #2a2a2a;
-      color: #666;
-      font-size: 0.75rem;
-      font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #2a2a2a; color: #666;
+      font-size: 0.75rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .step-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #e0e0e0;
-    }
-    .step-sub {
-      font-size: 0.8rem;
-      color: #555;
-      margin-top: 2px;
-    }
-
+    .step-title { font-size: 1rem; font-weight: 600; color: #e0e0e0; }
+    .step-sub { font-size: 0.8rem; color: #555; margin-top: 2px; }
     .drop-zone {
-      border: 1.5px dashed #333;
-      border-radius: 10px;
-      padding: 40px 24px;
-      text-align: center;
-      cursor: pointer;
-      color: #555;
-      font-size: 0.9rem;
+      border: 1.5px dashed #333; border-radius: 10px; padding: 40px 24px;
+      text-align: center; cursor: pointer; color: #555; font-size: 0.9rem;
       transition: border-color 0.15s, color 0.15s;
     }
     .drop-zone:hover, .drop-zone.dragover { border-color: #666; color: #aaa; }
     .drop-zone input { display: none; }
-
-    .file-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .file-chip {
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      border-radius: 4px;
-      padding: 3px 9px;
-      font-size: 0.75rem;
-      color: #888;
-    }
-
     .thumb-strip { display: flex; gap: 6px; flex-wrap: wrap; }
-    .thumb-strip img {
-      width: 72px; height: 72px;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 1px solid #2a2a2a;
-    }
-
-    .preview-img {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid #2a2a2a;
-      display: none;
-    }
+    .thumb-strip img { width: 72px; height: 72px; object-fit: cover; border-radius: 6px; border: 1px solid #2a2a2a; }
+    .preview-img { width: 100%; border-radius: 10px; border: 1px solid #2a2a2a; display: none; }
     .preview-img.visible { display: block; }
-
-    /* before/after */
     .compare-row { display: flex; gap: 10px; }
     .compare-box { flex: 1; display: flex; flex-direction: column; gap: 6px; }
     .compare-box span { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 0.06em; }
     .compare-box img { width: 100%; border-radius: 8px; border: 1px solid #2a2a2a; }
-
-    /* grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3px;
-      width: 100%;
-    }
-    .grid-cell { aspect-ratio: 1; overflow: hidden; background: #1a1a1a; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; width: 100%; }
+    .grid-cell { aspect-ratio: 4/5; overflow: hidden; background: #1a1a1a; }
+    .grid-cell.featured { grid-column: span 2; grid-row: span 2; aspect-ratio: 4/5; }
     .grid-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-    /* buttons */
     .btn {
-      background: #e0e0e0;
-      color: #0f0f0f;
-      border: none;
-      border-radius: 10px;
-      padding: 13px 24px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      width: 100%;
-      transition: background 0.15s;
+      background: #e0e0e0; color: #0f0f0f; border: none; border-radius: 10px;
+      padding: 13px 24px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; width: 100%; transition: background 0.15s;
     }
     .btn:hover { background: #fff; }
     .btn:disabled { background: #222; color: #555; cursor: not-allowed; }
     .btn-ghost {
-      background: none;
-      border: 1px solid #2a2a2a;
-      color: #666;
-      border-radius: 10px;
-      padding: 11px 24px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      width: 100%;
+      background: none; border: 1px solid #2a2a2a; color: #666; border-radius: 10px;
+      padding: 11px 24px; font-size: 0.85rem; cursor: pointer; width: 100%;
       transition: border-color 0.15s, color 0.15s;
     }
     .btn-ghost:hover { border-color: #555; color: #aaa; }
-
-    #status {
-      font-size: 0.8rem;
-      color: #555;
-      text-align: center;
-      min-height: 1.2em;
+    #status, #status2 { font-size: 0.8rem; color: #555; text-align: center; min-height: 1.2em; }
+    a.download { display: block; text-align: center; font-size: 0.85rem; color: #aaa; text-decoration: underline; cursor: pointer; }
+    .sliders-section { display: flex; flex-direction: column; gap: 22px; }
+    .sliders-section h3 { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; color: #e0e0e0; text-transform: uppercase; margin-bottom: 2px; }
+    #hue-sliders { display: flex; flex-direction: column; gap: 14px; }
+    .slider-row { display: grid; grid-template-columns: 16px 1fr 40px; align-items: center; gap: 10px; }
+    .swatch { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 3px; border-radius: 2px;
+      background: #2a2a2a; outline: none; cursor: pointer;
     }
-
-    a.download {
-      display: block;
-      text-align: center;
-      font-size: 0.85rem;
-      color: #aaa;
-      text-decoration: underline;
-      cursor: pointer;
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px;
+      border-radius: 50%; background: #666; cursor: pointer;
     }
+    .slider-val { font-size: 0.7rem; color: #666; text-align: right; font-variant-numeric: tabular-nums; }
+    .slider-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+    .slider-wrap::after { content: ""; position: absolute; left: 50%; transform: translateX(-50%); width: 2px; height: 12px; background: #2a2a2a; border-radius: 1px; pointer-events: none; z-index: 0; }
+    .slider-wrap input[type=range] { position: relative; z-index: 1; width: 100%; }
+    .section-divider { height: 1px; background: #1e1e1e; }
   </style>
 </head>
 <body>
   <h1>autoedit</h1>
-
   <div id="stepper">
 
-    <!-- Step 1: Loading -->
     <div class="step active" id="step-loading">
       <div class="step-header">
         <div class="step-num">·</div>
@@ -179,7 +92,6 @@
       </div>
     </div>
 
-    <!-- Step 2: Inspo -->
     <div class="step" id="step-inspo">
       <div class="step-header">
         <div class="step-num">1</div>
@@ -194,7 +106,6 @@
       <div id="status"></div>
     </div>
 
-    <!-- Step 3: Pick input -->
     <div class="step" id="step-input">
       <div class="step-header">
         <div class="step-num">2</div>
@@ -210,20 +121,47 @@
       <div id="status2"></div>
     </div>
 
-    <!-- Step 4: Result -->
     <div class="step" id="step-result">
-      <div class="step-header">
-        <div class="step-num">3</div>
-        <div><div class="step-title">Result</div><div class="step-sub">Before / after</div></div>
+      <div class="step-header" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="step-num">3</div>
+          <div><div class="step-title">Result</div><div class="step-sub">Adjust and save</div></div>
+        </div>
+        <a id="download-link-top" download="output.jpg" style="font-size:0.8rem;font-weight:600;color:#0f0f0f;background:#e0e0e0;border-radius:8px;padding:6px 16px;text-decoration:none;cursor:pointer;white-space:nowrap">Save</a>
       </div>
+
+      <div style="font-size:0.7rem;font-weight:600;letter-spacing:0.08em;color:#e0e0e0;text-transform:uppercase">Grid preview</div>
+      <div class="grid" id="grid"></div>
+
+      <div class="sliders-section">
+        <h3>Global</h3>
+        <div class="slider-row" style="grid-template-columns: 64px 1fr 40px">
+          <span style="font-size:0.75rem;color:#666">Exposure</span>
+          <div class="slider-wrap"><input type="range" id="sl-exposure" min="-100" max="100" value="0" /></div>
+          <div class="slider-val"><span id="sv-exposure">0</span></div>
+        </div>
+        <div class="slider-row" style="grid-template-columns: 64px 1fr 40px">
+          <span style="font-size:0.75rem;color:#666">Contrast</span>
+          <div class="slider-wrap"><input type="range" id="sl-contrast" min="-100" max="100" value="0" /></div>
+          <div class="slider-val"><span id="sv-contrast">0</span></div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="sliders-section">
+        <h3>Saturation by hue</h3>
+        <div id="hue-sliders"></div>
+      </div>
+
+      <div class="section-divider"></div>
+
       <div class="compare-row">
         <div class="compare-box"><span>Before</span><img id="before-result" /></div>
         <div class="compare-box"><span>After</span><img id="after-result" /></div>
       </div>
-      <a class="download" id="download-link" download="output.jpg">Save</a>
-      <div style="margin-top:8px;font-size:0.75rem;color:#444;text-align:center">Grid preview</div>
-      <div class="grid" id="grid"></div>
-      <button class="btn-ghost" id="edit-another-btn">Edit another photo</button>
+
+<button class="btn-ghost" id="edit-another-btn">Edit another photo</button>
       <button class="btn-ghost" id="restart-btn">Start over</button>
     </div>
 
@@ -236,97 +174,92 @@
     let inputFile = null;
     let inspoFiles = [];
     let inspoUrls = [];
-    let outputB64 = null;
+    const N_BANDS = 16;
 
-    // ── Step navigation ────────────────────────────────────────────────────────
+    function hueToCSS(h) { return `hsl(${Math.round(h * 360)},75%,55%)`; }
     function showStep(id) {
       document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
     }
 
-    // ── Pyodide ────────────────────────────────────────────────────────────────
+    // Build hue slider rows once
+    function buildHueSliders() {
+      const container = document.getElementById("hue-sliders");
+      for (let b = 0; b < N_BANDS; b++) {
+        const center = (b + 0.5) / N_BANDS;
+        const row = document.createElement("div");
+        row.className = "slider-row";
+        row.innerHTML = `
+          <div class="swatch" style="background:${hueToCSS(center)}"></div>
+          <div class="slider-wrap"><input type="range" id="sl-hue-${b}" min="-100" max="100" value="0" /></div>
+          <div class="slider-val"><span id="sv-hue-${b}">0</span></div>`;
+        container.appendChild(row);
+        document.getElementById(`sl-hue-${b}`).addEventListener("input", onSliderChange);
+      }
+    }
+
     const AUTOEDIT_PY = `
 import numpy as np
 from PIL import Image, ImageOps
 
 def rgb_to_hsv(arr):
-    r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]
-    v = arr.max(axis=-1)
-    mn = arr.min(axis=-1)
-    delta = v - mn
+    r, g, b = arr[...,0], arr[...,1], arr[...,2]
+    v = arr.max(axis=-1); mn = arr.min(axis=-1); delta = v - mn
     s = np.where(v > 0, delta / np.where(v > 0, v, 1.0), 0.0)
     h = np.zeros_like(v)
     with np.errstate(invalid="ignore", divide="ignore"):
-        m_r = (v == r) & (delta > 0)
-        m_g = (v == g) & (delta > 0)
-        m_b = (v == b) & (delta > 0)
-        h[m_r] = ((g[m_r] - b[m_r]) / delta[m_r]) % 6
-        h[m_g] = (b[m_g] - r[m_g]) / delta[m_g] + 2
-        h[m_b] = (r[m_b] - g[m_b]) / delta[m_b] + 4
+        m_r=(v==r)&(delta>0); m_g=(v==g)&(delta>0); m_b=(v==b)&(delta>0)
+        h[m_r]=((g[m_r]-b[m_r])/delta[m_r])%6
+        h[m_g]=(b[m_g]-r[m_g])/delta[m_g]+2
+        h[m_b]=(r[m_b]-g[m_b])/delta[m_b]+4
     h /= 6.0
     return np.stack([h, s, v], axis=-1)
 
 def hsv_to_rgb(h, s, v):
-    h6 = h * 6.0
-    i = np.floor(h6).astype(np.int32) % 6
-    f = h6 - np.floor(h6)
-    p = v * (1 - s)
-    q = v * (1 - f * s)
-    t = v * (1 - (1 - f) * s)
-    rgb = np.empty((*h.shape, 3), dtype=np.float32)
-    for idx, (rc, gc, bc) in enumerate([(v, t, p), (q, v, p), (p, v, t),
-                                         (p, q, v), (t, p, v), (v, p, q)]):
-        m = i == idx
-        rgb[m, 0] = rc[m]; rgb[m, 1] = gc[m]; rgb[m, 2] = bc[m]
+    h6=h*6.0; i=np.floor(h6).astype(np.int32)%6; f=h6-np.floor(h6)
+    p=v*(1-s); q=v*(1-f*s); t=v*(1-(1-f)*s)
+    rgb=np.empty((*h.shape,3),dtype=np.float32)
+    for idx,(rc,gc,bc) in enumerate([(v,t,p),(q,v,p),(p,v,t),(p,q,v),(t,p,v),(v,p,q)]):
+        m=i==idx; rgb[m,0]=rc[m]; rgb[m,1]=gc[m]; rgb[m,2]=bc[m]
     return rgb
 
 def load_hsv(path, max_dim=2000):
-    img = ImageOps.exif_transpose(Image.open(path).convert("RGB"))
-    w, h = img.size
-    if max(w, h) > max_dim:
-        scale = max_dim / max(w, h)
-        img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
-    arr = np.array(img, dtype=np.float32) / 255.0
-    return rgb_to_hsv(arr)
+    img=ImageOps.exif_transpose(Image.open(path).convert("RGB"))
+    w,h=img.size
+    if max(w,h)>max_dim:
+        scale=max_dim/max(w,h); img=img.resize((int(w*scale),int(h*scale)),Image.LANCZOS)
+    return rgb_to_hsv(np.array(img,dtype=np.float32)/255.0)
 
 def precompute_ranks(src_vals, bins=4096):
-    flat = src_vals.ravel()
-    hist, edges = np.histogram(flat, bins=bins, range=(0.0, 1.0))
-    cdf = np.cumsum(hist).astype(np.float32)
-    cdf /= cdf[-1]
-    idx = np.clip(np.digitize(flat, edges[1:], right=False), 0, bins - 1)
+    flat=src_vals.ravel()
+    hist,edges=np.histogram(flat,bins=bins,range=(0.0,1.0))
+    cdf=np.cumsum(hist).astype(np.float32); cdf/=cdf[-1]
+    idx=np.clip(np.digitize(flat,edges[1:],right=False),0,bins-1)
     return cdf[idx].reshape(src_vals.shape)
 
 def _smooth_hist(h, sigma=4):
-    size = sigma * 6 + 1
-    x = np.arange(size) - size // 2
-    kernel = np.exp(-0.5 * (x / float(sigma)) ** 2)
-    kernel /= kernel.sum()
-    return np.convolve(h, kernel, mode="same")
+    size=sigma*6+1; x=np.arange(size)-size//2
+    kernel=np.exp(-0.5*(x/float(sigma))**2); kernel/=kernel.sum()
+    return np.convolve(h,kernel,mode="same")
 `;
 
     async function initPyodide() {
       pyodide = await loadPyodide();
       await pyodide.loadPackage(["numpy", "Pillow"]);
       pyodide.runPython(AUTOEDIT_PY);
+      buildHueSliders();
       showStep("step-inspo");
     }
-
     initPyodide().catch(e => {
       document.querySelector("#step-loading .step-sub").textContent = "Failed to load: " + e;
     });
 
-    // ── Drop zones ─────────────────────────────────────────────────────────────
     function wireDrop(zone, input, onFiles) {
       zone.addEventListener("click", () => input.click());
       input.addEventListener("change", () => onFiles(Array.from(input.files)));
       zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });
       zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
-      zone.addEventListener("drop", e => {
-        e.preventDefault();
-        zone.classList.remove("dragover");
-        onFiles(Array.from(e.dataTransfer.files));
-      });
+      zone.addEventListener("drop", e => { e.preventDefault(); zone.classList.remove("dragover"); onFiles(Array.from(e.dataTransfer.files)); });
     }
 
     wireDrop(document.getElementById("inspo-drop"), document.getElementById("inspo-input"), files => {
@@ -334,207 +267,239 @@ def _smooth_hist(h, sigma=4):
       inspoUrls = files.map(f => URL.createObjectURL(f));
       const thumbs = document.getElementById("inspo-thumbs");
       thumbs.innerHTML = "";
-      inspoUrls.forEach(url => {
-        const img = document.createElement("img");
-        img.src = url;
-        thumbs.appendChild(img);
-      });
+      inspoUrls.forEach(url => { const img = document.createElement("img"); img.src = url; thumbs.appendChild(img); });
       document.getElementById("create-btn").disabled = false;
     });
 
     wireDrop(document.getElementById("input-drop"), document.getElementById("input-input"), files => {
       if (!files.length) return;
       inputFile = files[0];
-      const beforeImg = document.getElementById("before-img");
-      beforeImg.src = URL.createObjectURL(inputFile);
-      beforeImg.classList.add("visible");
+      const bi = document.getElementById("before-img");
+      bi.src = URL.createObjectURL(inputFile); bi.classList.add("visible");
       document.getElementById("apply-btn").disabled = false;
     });
 
-    // ── Build profile ──────────────────────────────────────────────────────────
     document.getElementById("create-btn").addEventListener("click", async () => {
       const btn = document.getElementById("create-btn");
       const status = document.getElementById("status");
-      btn.disabled = true;
-      status.textContent = "Building profile…";
-
+      btn.disabled = true; status.textContent = "Building profile…";
       try {
-        const inspoByteArrays = await Promise.all(inspoFiles.map(async f => {
-          const buf = await f.arrayBuffer();
-          return new Uint8Array(buf);
-        }));
-        pyodide.globals.set("_inspo_byte_arrays", inspoByteArrays);
-
+        const arrays = await Promise.all(inspoFiles.map(async f => new Uint8Array(await f.arrayBuffer())));
+        pyodide.globals.set("_inspo_byte_arrays", arrays);
         await pyodide.runPythonAsync(`
-import io
-import numpy as np
-
-n_bands = 16
-band_hists = [np.zeros(256, dtype=np.float64) for _ in range(n_bands)]
-v_hist_acc = np.zeros(256, dtype=np.float64)
-
+import io, numpy as np
+n_bands=16
+band_hists=[np.zeros(256,dtype=np.float64) for _ in range(n_bands)]
+v_hist_acc=np.zeros(256,dtype=np.float64)
 for js_arr in _inspo_byte_arrays:
-    data = bytes(js_arr.to_py())
-    hsv = load_hsv(io.BytesIO(data))
-    h_chan, s_chan, v_chan = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+    data=bytes(js_arr.to_py()); hsv=load_hsv(io.BytesIO(data))
+    h_chan,s_chan,v_chan=hsv[...,0],hsv[...,1],hsv[...,2]
     for band in range(n_bands):
-        lo, hi = band / n_bands, (band + 1) / n_bands
-        mask = (h_chan >= lo) & (h_chan < hi)
-        if not mask.any():
-            continue
-        hist, _ = np.histogram(s_chan[mask], bins=256, range=(0.0, 1.0))
-        band_hists[band] += hist
-    h, _ = np.histogram(v_chan, bins=256, range=(0.0, 1.0))
-    v_hist_acc += h
-
-band_hists = [_smooth_hist(h) for h in band_hists]
-v_hist_acc = _smooth_hist(v_hist_acc)
-_profile = {
-    "n_bands": n_bands,
-    "histograms": [h.tolist() for h in band_hists],
-    "v_histogram": v_hist_acc.tolist(),
-}
+        lo,hi=band/n_bands,(band+1)/n_bands
+        mask=(h_chan>=lo)&(h_chan<hi)
+        if not mask.any(): continue
+        hist,_=np.histogram(s_chan[mask],bins=256,range=(0.0,1.0)); band_hists[band]+=hist
+    h,_=np.histogram(v_chan,bins=256,range=(0.0,1.0)); v_hist_acc+=h
+band_hists=[_smooth_hist(h) for h in band_hists]; v_hist_acc=_smooth_hist(v_hist_acc)
+_profile={"n_bands":n_bands,"histograms":[h.tolist() for h in band_hists],"v_histogram":v_hist_acc.tolist()}
 `);
-        profileReady = true;
-        status.textContent = "";
-        showStep("step-input");
-      } catch (e) {
-        status.textContent = "Error: " + e;
-        console.error(e);
-        btn.disabled = false;
-      }
+        profileReady = true; status.textContent = ""; showStep("step-input");
+      } catch(e) { status.textContent = "Error: " + e; console.error(e); btn.disabled = false; }
     });
 
-    // ── Apply ──────────────────────────────────────────────────────────────────
     document.getElementById("apply-btn").addEventListener("click", async () => {
       const btn = document.getElementById("apply-btn");
       const status = document.getElementById("status2");
-      btn.disabled = true;
-      status.textContent = "Applying look…";
-
+      btn.disabled = true; status.textContent = "Applying look…";
       try {
-        const buf = await inputFile.arrayBuffer();
-        pyodide.globals.set("_input_bytes", new Uint8Array(buf));
-
+        pyodide.globals.set("_input_bytes", new Uint8Array(await inputFile.arrayBuffer()));
         await pyodide.runPythonAsync(`
-import io
-import numpy as np
-from PIL import Image
+import io, numpy as np
+profile=_profile; n_bands=profile["n_bands"]
+band_hists=[np.array(h) for h in profile["histograms"]]
+data=bytes(_input_bytes.to_py()); hsv=load_hsv(io.BytesIO(data))
+_h_chan=hsv[...,0]; _s_chan=hsv[...,1].copy(); _v_chan=hsv[...,2]
 
-profile = _profile
-n_bands = profile["n_bands"]
-band_hists = [np.array(h) for h in profile["histograms"]]
+band_width=1.0/n_bands; band_sigma=band_width*0.5
 
-data = bytes(_input_bytes.to_py())
-hsv = load_hsv(io.BytesIO(data))
-h_chan = hsv[..., 0]
-s_chan = hsv[..., 1].copy()
-v_chan = hsv[..., 2]
+bins=256
+centers=((np.arange(bins)+0.5)/bins).astype(np.float32)
+rank_bins=(np.arange(bins)+0.5)/bins
 
-band_width = 1.0 / n_bands
-band_sigma = band_width * 0.5
-s_ranks = precompute_ranks(s_chan)
+# Step 1: match V first so saturation ranks are computed on a tonally-corrected image
+v_ref=np.array(profile["v_histogram"])
+v_cdf=np.cumsum(v_ref).astype(np.float64); v_cdf/=v_cdf[-1]
+_v_lut=centers[np.searchsorted(v_cdf,rank_bins,side="left").clip(0,bins-1)]
+_v_ranks=precompute_ranks(_v_chan)
+_v_rank_idx=np.clip((_v_ranks*bins).astype(np.int32),0,bins-1)
+_v_new_algo=_v_lut[_v_rank_idx]
 
-bins = 256
-centers = ((np.arange(bins) + 0.5) / bins).astype(np.float32)
-rank_bins = (np.arange(bins) + 0.5) / bins
-all_luts = np.zeros((n_bands, bins), dtype=np.float32)
-has_data = np.zeros(n_bands, dtype=bool)
-for band, ref_hist in enumerate(band_hists):
-    if ref_hist.sum() == 0:
-        continue
-    ref_cdf = np.cumsum(ref_hist).astype(np.float64)
-    ref_cdf /= ref_cdf[-1]
-    all_luts[band] = centers[np.searchsorted(ref_cdf, rank_bins, side="left").clip(0, bins - 1)]
-    has_data[band] = True
+# Step 2: compute saturation ranks on the brightness-corrected image
+_s_ranks=precompute_ranks(_s_chan * (_v_new_algo / np.where(_v_chan > 0.01, _v_chan, 0.01)))
 
-h_lut_bins = 512
-h_vals = (np.arange(h_lut_bins) + 0.5) / h_lut_bins
-band_centers = (np.arange(n_bands) + 0.5) / n_bands
-diff = np.abs(h_vals[:, None] - band_centers[None, :])
-diff = np.minimum(diff, 1.0 - diff)
-band_weights_2d = np.exp(-0.5 * (diff / band_sigma) ** 2)
-band_weights_2d *= has_data[None, :]
-weight_sum = band_weights_2d.sum(axis=1, keepdims=True)
-lut_2d = np.where(weight_sum > 0, (band_weights_2d @ all_luts) / weight_sum, 0.0)
+all_luts=np.zeros((n_bands,bins),dtype=np.float32)
+_band_medians=np.zeros(n_bands,dtype=np.float32)
+has_data=np.zeros(n_bands,dtype=bool)
+for band,ref_hist in enumerate(band_hists):
+    if ref_hist.sum()==0: continue
+    ref_cdf=np.cumsum(ref_hist).astype(np.float64); ref_cdf/=ref_cdf[-1]
+    all_luts[band]=centers[np.searchsorted(ref_cdf,rank_bins,side="left").clip(0,bins-1)]
+    _band_medians[band]=float(centers[np.searchsorted(ref_cdf,0.5,side="left").clip(0,bins-1)])
+    has_data[band]=True
+_all_luts=all_luts.copy()
 
-h_idx = np.clip((h_chan * h_lut_bins).astype(np.int32), 0, h_lut_bins - 1)
-s_rank_idx = np.clip((s_ranks * bins).astype(np.int32), 0, bins - 1)
-s_new_flat = lut_2d[h_idx.ravel(), s_rank_idx.ravel()]
-no_data = (weight_sum.ravel()[h_idx.ravel()] == 0)
-s_new_flat[no_data] = s_chan.ravel()[no_data]
-s_new = s_new_flat.reshape(s_chan.shape).astype(np.float32)
+h_lut_bins=512
+h_vals=(np.arange(h_lut_bins)+0.5)/h_lut_bins
+band_centers=(np.arange(n_bands)+0.5)/n_bands
+diff=np.abs(h_vals[:,None]-band_centers[None,:]); diff=np.minimum(diff,1.0-diff)
+bw2d=np.exp(-0.5*(diff/band_sigma)**2); bw2d*=has_data[None,:]
+_weight_sum=bw2d.sum(axis=1,keepdims=True)
+_lut_2d=np.where(_weight_sum>0,(bw2d@all_luts)/_weight_sum,0.0)
 
-lum_weight = np.ones_like(v_chan)
-lum_weight[v_chan < 0.1] = v_chan[v_chan < 0.1] / 0.1
-lum_weight[v_chan > 0.9] = (1.0 - v_chan[v_chan > 0.9]) / 0.1
-lum_weight = np.clip(lum_weight, 0.0, 1.0)
-s_final = np.clip(s_chan + lum_weight * (s_new - s_chan), 0.0, 1.0)
+_h_idx=np.clip((_h_chan*h_lut_bins).astype(np.int32),0,h_lut_bins-1)
+_s_rank_idx=np.clip((_s_ranks*bins).astype(np.int32),0,bins-1)
+s_new_flat=_lut_2d[_h_idx.ravel(),_s_rank_idx.ravel()]
+no_data=(_weight_sum.ravel()[_h_idx.ravel()]==0)
+s_new_flat[no_data]=_s_chan.ravel()[no_data]
+_s_new_algo=s_new_flat.reshape(_s_chan.shape).astype(np.float32)
 
-v_hist = profile.get("v_histogram")
-if v_hist is not None:
-    v_ref = np.array(v_hist)
-    v_cdf = np.cumsum(v_ref).astype(np.float64)
-    v_cdf /= v_cdf[-1]
-    v_lut = centers[np.searchsorted(v_cdf, rank_bins, side="left").clip(0, bins - 1)]
-    v_ranks = precompute_ranks(v_chan)
-    v_rank_idx = np.clip((v_ranks * bins).astype(np.int32), 0, bins - 1)
-    v_final = v_lut[v_rank_idx]
-else:
-    v_final = v_chan
+# Per-band mean saturation delta → slider default (scaled to -100..100)
+_band_deltas=[]
+for band in range(n_bands):
+    center=(band+0.5)/n_bands
+    diff_h=np.abs(_h_chan-center); diff_h=np.minimum(diff_h,1.0-diff_h)
+    mask=diff_h<(band_width*1.5)
+    if mask.any():
+        delta=float(np.mean(_s_new_algo[mask]-_s_chan[mask]))
+        _band_deltas.append(round(delta*100))
+    else:
+        _band_deltas.append(0)
 
-rgb = hsv_to_rgb(h_chan, s_final, v_final)
-buf = io.BytesIO()
-Image.fromarray((rgb * 255).astype(np.uint8)).save(buf, format="JPEG", quality=95)
-_output_bytes = buf.getvalue()
+# Mean V delta → exposure slider default
+_exposure_default=round(float(np.mean(_v_new_algo-_v_chan))*100)
+# Std ratio → contrast slider default
+_contrast_default=round((float(np.std(_v_new_algo))/max(float(np.std(_v_chan)),1e-6)-1.0)*100)
 `);
 
-        const outputBytes = pyodide.globals.get("_output_bytes");
-        const arr = new Uint8Array(outputBytes.toJs ? outputBytes.toJs() : outputBytes);
-        let binary = "";
-        for (let i = 0; i < arr.length; i++) binary += String.fromCharCode(arr[i]);
-        outputB64 = "data:image/jpeg;base64," + btoa(binary);
+        // Set slider values from algo output
+        const bandDeltas = pyodide.globals.get("_band_deltas").toJs();
+        const expDefault = pyodide.globals.get("_exposure_default");
+        const conDefault = pyodide.globals.get("_contrast_default");
 
-        const beforeSrc = document.getElementById("before-img").src;
-        document.getElementById("before-result").src = beforeSrc;
-        document.getElementById("after-result").src = outputB64;
-        document.getElementById("download-link").href = outputB64;
+        const expClamped = Math.max(-100, Math.min(100, expDefault));
+        const conClamped = Math.max(-100, Math.min(100, conDefault));
 
-        // Build grid: output first, then inspo
-        const grid = document.getElementById("grid");
-        grid.innerHTML = "";
-        [outputB64, ...inspoUrls].forEach(url => {
-          const cell = document.createElement("div");
-          cell.className = "grid-cell";
-          const img = document.createElement("img");
-          img.src = url;
-          cell.appendChild(img);
-          grid.appendChild(cell);
-        });
+        document.getElementById("sl-exposure").value = expClamped;
+        document.getElementById("sv-exposure").textContent = fmtVal(expClamped);
+        document.getElementById("sl-contrast").value = conClamped;
+        document.getElementById("sv-contrast").textContent = fmtVal(conClamped);
 
+        for (let b = 0; b < N_BANDS; b++) {
+          const v = Math.max(-100, Math.min(100, bandDeltas[b]));
+          document.getElementById(`sl-hue-${b}`).value = v;
+          document.getElementById(`sv-hue-${b}`).textContent = fmtVal(v);
+        }
+
+        document.getElementById("before-result").src = URL.createObjectURL(inputFile);
         status.textContent = "";
+        await rerender();
         showStep("step-result");
-      } catch (e) {
-        status.textContent = "Error: " + e;
-        console.error(e);
-        btn.disabled = false;
-      }
+      } catch(e) { status.textContent = "Error: " + e; console.error(e); btn.disabled = false; }
     });
 
-    // ── Navigation ─────────────────────────────────────────────────────────────
-    document.getElementById("back-btn").addEventListener("click", () => showStep("step-inspo"));
+    function fmtVal(v) { return v > 0 ? "+" + v : String(v); }
+    function onSliderChange(e) {
+      const id = e.target.id; const val = parseInt(e.target.value);
+      if (id.startsWith("sl-hue-")) {
+        document.getElementById(`sv-hue-${id.replace("sl-hue-","")}`).textContent = fmtVal(val);
+      } else {
+        document.getElementById(`sv-${id.replace("sl-","")}`).textContent = fmtVal(val);
+      }
+      rerender();
+    }
+    ["exposure","contrast"].forEach(id => {
+      document.getElementById(`sl-${id}`).addEventListener("input", onSliderChange);
+    });
 
+    async function rerender() {
+      const exposure = parseInt(document.getElementById("sl-exposure").value) / 100;
+      const contrast = parseInt(document.getElementById("sl-contrast").value) / 100;
+      const hueDeltas = [];
+      for (let b = 0; b < N_BANDS; b++) {
+        hueDeltas.push(parseInt(document.getElementById(`sl-hue-${b}`).value) / 100);
+      }
+
+      pyodide.globals.set("_exposure_val", exposure);
+      pyodide.globals.set("_contrast_val", contrast);
+pyodide.globals.set("_hue_deltas", hueDeltas);
+
+      await pyodide.runPythonAsync(`
+import io, numpy as np
+from PIL import Image
+
+hue_deltas=list(_hue_deltas.to_py())
+exposure_val=float(_exposure_val); contrast_val=float(_contrast_val)
+n_bands=16; band_width=1.0/n_bands; band_sigma=band_width*0.5
+
+# Sliders represent total desired saturation delta from original (not additive on top of LUT).
+# The LUT was used only for the initial compute; rerender applies slider deltas to _s_chan directly.
+adj_accum=np.zeros_like(_s_chan); weight_accum=np.zeros_like(_s_chan)
+for band in range(n_bands):
+    delta=hue_deltas[band]
+    center=(band+0.5)/n_bands
+    diff=np.abs(_h_chan-center); diff=np.minimum(diff,1.0-diff)
+    bw=np.exp(-0.5*(diff/band_sigma)**2)
+    adj_accum+=bw*delta; weight_accum+=bw
+
+with np.errstate(divide="ignore",invalid="ignore"):
+    s_slider_adj=np.where(weight_accum>0,adj_accum/weight_accum,0.0)
+
+# Suppress hue adjustment on near-grey pixels — their hue is numerically unstable
+s_slider_adj*=np.clip(_s_chan/0.15,0.0,1.0)
+
+lum_weight=np.ones_like(_v_chan)
+lum_weight[_v_chan<0.1]=_v_chan[_v_chan<0.1]/0.1
+lum_weight[_v_chan>0.9]=(1.0-_v_chan[_v_chan>0.9])/0.1
+lum_weight=np.clip(lum_weight,0.0,1.0)
+s_final=np.clip(_s_chan+lum_weight*s_slider_adj,0.0,1.0)
+
+v_final=np.clip(_v_chan+exposure_val*0.3,0.0,1.0)
+v_final=np.clip(0.5+(v_final-0.5)*(1.0+contrast_val),0.0,1.0)
+
+rgb=hsv_to_rgb(_h_chan,s_final,v_final)
+buf=io.BytesIO()
+Image.fromarray((rgb*255).astype(np.uint8)).save(buf,format="JPEG",quality=90)
+_output_bytes=buf.getvalue()
+`);
+
+      const outputBytes = pyodide.globals.get("_output_bytes");
+      const arr = new Uint8Array(outputBytes.toJs ? outputBytes.toJs() : outputBytes);
+      let binary = ""; for (let i = 0; i < arr.length; i++) binary += String.fromCharCode(arr[i]);
+      const b64 = "data:image/jpeg;base64," + btoa(binary);
+
+      document.getElementById("after-result").src = b64;
+      document.getElementById("download-link-top").href = b64;
+
+      const grid = document.getElementById("grid"); grid.innerHTML = "";
+      [b64, ...inspoUrls].forEach((url, i) => {
+        const cell = document.createElement("div");
+        cell.className = i === 0 ? "grid-cell featured" : "grid-cell";
+        const img = document.createElement("img"); img.src = url;
+        cell.appendChild(img); grid.appendChild(cell);
+      });
+    }
+
+    document.getElementById("back-btn").addEventListener("click", () => showStep("step-inspo"));
     document.getElementById("edit-another-btn").addEventListener("click", () => {
       inputFile = null;
       document.getElementById("before-img").classList.remove("visible");
       document.getElementById("apply-btn").disabled = true;
       showStep("step-input");
     });
-
     document.getElementById("restart-btn").addEventListener("click", () => {
-      inspoFiles = []; inspoUrls = []; inputFile = null; profileReady = false; outputB64 = null;
-      document.getElementById("inspo-thumbs").innerHTML = "";
-      document.getElementById("create-btn").disabled = true;
+      inspoFiles=[]; inspoUrls=[]; inputFile=null; profileReady=false;
+      document.getElementById("inspo-thumbs").innerHTML="";
+      document.getElementById("create-btn").disabled=true;
       document.getElementById("before-img").classList.remove("visible");
       showStep("step-inspo");
     });
