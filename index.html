@@ -231,8 +231,12 @@ def hsv_to_rgb(h, s, v):
         rgb[m, 0] = rc[m]; rgb[m, 1] = gc[m]; rgb[m, 2] = bc[m]
     return rgb
 
-def load_hsv(path):
+def load_hsv(path, max_dim=2000):
     img = ImageOps.exif_transpose(Image.open(path).convert("RGB"))
+    w, h = img.size
+    if max(w, h) > max_dim:
+        scale = max_dim / max(w, h)
+        img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
     arr = np.array(img, dtype=np.float32) / 255.0
     return rgb_to_hsv(arr)
 
