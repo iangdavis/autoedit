@@ -42,10 +42,10 @@ IG_HEADERS = {
 
 @app.get("/instagram/{handle}")
 async def get_instagram_posts(handle: str, count: int = 12):
-    url = f"https://www.instagram.com/{handle}/?__a=1&__d=dis"
+    url = f"https://www.instagram.com/api/v1/users/web_profile_info/?username={handle}"
     async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
         try:
-            resp = await client.get(url, headers=IG_HEADERS)
+            resp = await client.get(url, headers={**IG_HEADERS, "x-ig-app-id": "936619743392459", "x-requested-with": "XMLHttpRequest"})
         except httpx.RequestError as e:
             raise HTTPException(502, f"Could not reach Instagram: {e}")
 
