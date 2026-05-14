@@ -53,7 +53,7 @@ async def get_instagram_posts(handle: str, count: int = 12):
         raise HTTPException(404, "Profile not found — check the handle")
     if resp.status_code == 401:
         raise HTTPException(401, "Profile is private")
-    if resp.status_code != 200:
+    if not resp.is_success:
         raise HTTPException(resp.status_code, f"Instagram returned {resp.status_code}")
 
     try:
