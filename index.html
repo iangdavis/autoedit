@@ -279,8 +279,9 @@ def _smooth_hist(h, sigma=4):
       zone.addEventListener("drop", e => { e.preventDefault(); zone.classList.remove("dragover"); onFiles(Array.from(e.dataTransfer.files)); });
     }
 
-    const API_BASE = "http://localhost:8000";
-    const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+    const _apiParam = new URLSearchParams(location.search).get("api");
+    const API_BASE = _apiParam ? _apiParam.replace(/\/$/, "") : "http://localhost:8000";
+    const isLocal = !!_apiParam || ["localhost", "127.0.0.1"].includes(location.hostname);
     if (!isLocal) {
       document.getElementById("ig-section").style.display = "none";
       document.getElementById("ig-divider").style.display = "none";
