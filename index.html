@@ -98,7 +98,7 @@
         <div><div class="step-title">Inspiration images</div><div class="step-sub">Add photos whose look you want to match</div></div>
       </div>
 
-      <div style="display:flex;gap:8px;align-items:center">
+      <div id="ig-section" style="display:flex;gap:8px;align-items:center">
         <div style="position:relative;flex:1">
           <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#555;font-size:0.9rem;pointer-events:none">@</span>
           <input type="text" id="ig-handle" placeholder="instagram handle"
@@ -108,7 +108,7 @@
         <button class="btn" id="ig-fetch-btn" style="width:auto;padding:11px 18px;flex-shrink:0">Fetch</button>
       </div>
 
-      <div style="display:flex;align-items:center;gap:10px">
+      <div id="ig-divider" style="display:flex;align-items:center;gap:10px">
         <div style="flex:1;height:1px;background:#2a2a2a"></div>
         <span style="font-size:0.75rem;color:#444">or upload</span>
         <div style="flex:1;height:1px;background:#2a2a2a"></div>
@@ -280,6 +280,11 @@ def _smooth_hist(h, sigma=4):
     }
 
     const API_BASE = "http://localhost:8000";
+    const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+    if (!isLocal) {
+      document.getElementById("ig-section").style.display = "none";
+      document.getElementById("ig-divider").style.display = "none";
+    }
 
     async function fetchFromInstagram(handle) {
       const status = document.getElementById("status");
