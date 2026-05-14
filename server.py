@@ -59,7 +59,7 @@ async def get_instagram_posts(handle: str, count: int = 12):
     try:
         data = resp.json()
     except Exception:
-        raise HTTPException(502, "Unexpected response from Instagram")
+        raise HTTPException(502, f"status={resp.status_code} body={resp.text[:400]!r}")
 
     user = data.get("data", {}).get("user") or data.get("graphql", {}).get("user", {})
     edges = user.get("edge_owner_to_timeline_media", {}).get("edges", [])
