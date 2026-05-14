@@ -97,6 +97,23 @@
         <div class="step-num">1</div>
         <div><div class="step-title">Inspiration images</div><div class="step-sub">Add photos whose look you want to match</div></div>
       </div>
+
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="position:relative;flex:1">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#555;font-size:0.9rem;pointer-events:none">@</span>
+          <input type="text" id="ig-handle" placeholder="instagram handle"
+            style="width:100%;background:#1a1a1a;border:1.5px solid #2a2a2a;border-radius:10px;padding:11px 12px 11px 26px;color:#e0e0e0;font-size:0.9rem;outline:none"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        </div>
+        <button class="btn" id="ig-fetch-btn" style="width:auto;padding:11px 18px;flex-shrink:0">Fetch</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="flex:1;height:1px;background:#2a2a2a"></div>
+        <span style="font-size:0.75rem;color:#444">or upload</span>
+        <div style="flex:1;height:1px;background:#2a2a2a"></div>
+      </div>
+
       <div class="drop-zone" id="inspo-drop">
         <input type="file" id="inspo-input" multiple accept="image/*" />
         Tap to add photos
@@ -262,13 +279,74 @@ def _smooth_hist(h, sigma=4):
       zone.addEventListener("drop", e => { e.preventDefault(); zone.classList.remove("dragover"); onFiles(Array.from(e.dataTransfer.files)); });
     }
 
-    wireDrop(document.getElementById("inspo-drop"), document.getElementById("inspo-input"), files => {
+    const API_BASE = "http://localhost:8000";
+
+    async function fetchFromInstagram(handle) {
+      const status = document.getElementById("status");
+      status.textContent = `Fetching @${handle}…`;
+
+      let data;
+      try {
+        const resp = await fetch(`${API_BASE}/instagram/${handle}`);
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || `HTTP ${resp.status}`);
+        }
+        data = await resp.json();
+      } catch(e) {
+        if (e.message.includes("fetch")) throw new Error("Server not running — start it with: python -m uvicorn server:app");
+        throw e;
+      }
+
+      status.textContent = `Downloading ${data.urls.length} posts…`;
+
+      const files = [], urls = [];
+      for (const url of data.urls) {
+        try {
+          const resp = await fetch(`${API_BASE}/image?url=${encodeURIComponent(url)}`);
+          if (!resp.ok) continue;
+          const blob = await resp.blob();
+          files.push(new File([blob], "ig.jpg", { type: "image/jpeg" }));
+          urls.push(URL.createObjectURL(blob));
+        } catch(e) { /* skip failed image */ }
+      }
+
+      if (!files.length) throw new Error("Failed to download any images");
+      return { files, urls };
+    }
+
+    function setInspoImages(files, urls) {
       inspoFiles = files;
-      inspoUrls = files.map(f => URL.createObjectURL(f));
+      inspoUrls = urls;
       const thumbs = document.getElementById("inspo-thumbs");
       thumbs.innerHTML = "";
-      inspoUrls.forEach(url => { const img = document.createElement("img"); img.src = url; thumbs.appendChild(img); });
+      urls.forEach(url => { const img = document.createElement("img"); img.src = url; thumbs.appendChild(img); });
       document.getElementById("create-btn").disabled = false;
+    }
+
+    document.getElementById("ig-fetch-btn").addEventListener("click", async () => {
+      const handle = document.getElementById("ig-handle").value.trim().replace(/^@/, "");
+      if (!handle) return;
+      const btn = document.getElementById("ig-fetch-btn");
+      const status = document.getElementById("status");
+      btn.disabled = true;
+      try {
+        const { files, urls } = await fetchFromInstagram(handle);
+        setInspoImages(files, urls);
+        status.textContent = `Loaded ${files.length} posts from @${handle}`;
+      } catch(e) {
+        status.textContent = "Error: " + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById("ig-handle").addEventListener("keydown", e => {
+      if (e.key === "Enter") document.getElementById("ig-fetch-btn").click();
+    });
+
+    wireDrop(document.getElementById("inspo-drop"), document.getElementById("inspo-input"), files => {
+      setInspoImages(files, files.map(f => URL.createObjectURL(f)));
     });
 
     wireDrop(document.getElementById("input-drop"), document.getElementById("input-input"), files => {
@@ -483,7 +561,7 @@ _output_bytes=buf.getvalue()
       const grid = document.getElementById("grid"); grid.innerHTML = "";
       [b64, ...inspoUrls].forEach((url, i) => {
         const cell = document.createElement("div");
-        cell.className = i === 0 ? "grid-cell featured" : "grid-cell";
+        cell.className = "grid-cell";
         const img = document.createElement("img"); img.src = url;
         cell.appendChild(img); grid.appendChild(cell);
       });
