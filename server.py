@@ -25,21 +25,25 @@ app.add_middleware(
 )
 
 IG_HEADERS = {
-    "x-ig-app-id": "936619743392459",
     "User-Agent": (
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
-        "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-        "Mobile/15E148 Instagram/303.0.0.11.108"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
     ),
-    "Accept": "*/*",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://www.instagram.com/",
+    "sec-fetch-dest": "document",
+    "sec-fetch-mode": "navigate",
+    "sec-fetch-site": "same-origin",
 }
 
 
 @app.get("/instagram/{handle}")
 async def get_instagram_posts(handle: str, count: int = 12):
-    url = f"https://i.instagram.com/api/v1/users/web_profile_info/?username={handle}"
-    async with httpx.AsyncClient(timeout=10) as client:
+    url = f"https://www.instagram.com/{handle}/?__a=1&__d=dis"
+    async with httpx.AsyncClient(timeout=10, follow_redirects=True) as client:
         try:
             resp = await client.get(url, headers=IG_HEADERS)
         except httpx.RequestError as e:
@@ -57,12 +61,8 @@ async def get_instagram_posts(handle: str, count: int = 12):
     except Exception:
         raise HTTPException(502, "Unexpected response from Instagram")
 
-    edges = (
-        data.get("data", {})
-            .get("user", {})
-            .get("edge_owner_to_timeline_media", {})
-            .get("edges", [])
-    )
+    user = data.get("data", {}).get("user") or data.get("graphql", {}).get("user", {})
+    edges = user.get("edge_owner_to_timeline_media", {}).get("edges", [])
     if not edges:
         raise HTTPException(404, "No posts found — profile may be private")
 
